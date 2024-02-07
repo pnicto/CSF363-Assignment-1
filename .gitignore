@@ -1,0 +1,12 @@
+# This is an allowlist
+# Ignore everything by default
+*
+
+# We ignore everything except for the following files
+!.gitignore
+!*.cpp
+!.clang-format
+!*.pdf
+!*.md
+!*/
+!*.txt
