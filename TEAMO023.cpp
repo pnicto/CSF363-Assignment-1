@@ -1,6 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+const string INPUT_FILE_NAME = "input.txt";
+
 set<int> computeEpsilonClosure(set<int> oldStates,
                                vector<map<char, set<int>>> &transitions)
 {
@@ -522,17 +524,99 @@ bool checkIfRegexAccepts(string regex, string inputString)
     return finalNfa.checkAcceptance(inputString);
 }
 
-int main()
+// code for converting regex to NFA similar to checkIfRegexAccepts
+Nfa regexToNfa(string regex)
 {
-    string regex = "(((a)(((a)|(b))*))((b)(a)))";
-    string inputString = "abbab";
-    if (checkIfRegexAccepts(regex, inputString))
+    string postfixRegex = infixToPostfix(regex);
+    stack<NfaWithEpsilon> nfaStack;
+    set<char> alphabet{'a', 'b'};
+
+    for (char c : postfixRegex)
     {
-        cout << "accepted\n";
+        switch (c)
+        {
+        case '*': {
+            NfaWithEpsilon a = nfaStack.top();
+            nfaStack.pop();
+
+            nfaStack.push(closureNfa(a));
+            break;
+        }
+        case '|': {
+            NfaWithEpsilon b = nfaStack.top();
+            nfaStack.pop();
+
+            NfaWithEpsilon a = nfaStack.top();
+            nfaStack.pop();
+
+            nfaStack.push(orNfa(a, b));
+            break;
+        }
+        case '.': {
+            NfaWithEpsilon b = nfaStack.top();
+            nfaStack.pop();
+
+            NfaWithEpsilon a = nfaStack.top();
+            nfaStack.pop();
+
+            nfaStack.push(concatenateNfa(a, b));
+            break;
+        }
+        default: {
+            nfaStack.push(NfaWithEpsilon(c));
+            break;
+        }
+        }
+    }
+
+    NfaWithEpsilon finalNfaWithEpsilon = nfaStack.top();
+    nfaStack.pop();
+
+    return Nfa(finalNfaWithEpsilon, alphabet);
+}
+
+struct FileInput
+{
+    string inputText;
+    vector<Nfa> regexps;
+};
+
+FileInput parseInput(string filename)
+{
+    FileInput fileInput;
+
+    ifstream inputFile(filename);
+    string line;
+
+    if (inputFile.is_open())
+    {
+        if (getline(inputFile, line))
+        {
+            fileInput.inputText = line;
+        }
+        while (getline(inputFile, line))
+        {
+            Nfa temp = regexToNfa(line);
+            fileInput.regexps.push_back(temp);
+        }
+        inputFile.close();
     }
     else
     {
-        cout << "rejected\n";
+        cout << "Unable to open file" << endl;
+    }
+
+    return fileInput;
+}
+
+int main()
+{
+    FileInput fileInput = parseInput(INPUT_FILE_NAME);
+
+    cout << "Input: " << fileInput.inputText << endl;
+    for (auto regex : fileInput.regexps)
+    {
+        regex.printNFA();
     }
 
     return 0;

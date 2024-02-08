@@ -1,0 +1,3 @@
+abbaababaaabbaa
+(((a)*)(b))
+((b)(a))
