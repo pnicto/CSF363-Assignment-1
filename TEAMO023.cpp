@@ -1,4 +1,11 @@
-#include <bits/stdc++.h>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <set>
+#include <stack>
+#include <string>
+#include <vector>
+
 using namespace std;
 
 const string INPUT_FILE_NAME = "input.txt";
