@@ -620,11 +620,60 @@ int main()
 {
     FileInput fileInput = parseInput(INPUT_FILE_NAME);
 
-    cout << "Input: " << fileInput.inputText << endl;
-    for (auto regex : fileInput.regexps)
+    int index = 0;
+    int inputTextSize = fileInput.inputText.length(),
+        regexpsSize = fileInput.regexps.size();
+    string output = "";
+
+    while (index < inputTextSize)
     {
-        regex.printNFA();
+        // Calculate longest prefix length for every regex.
+        // Keep track of the longest prefix length that is found overall.
+        vector<int> prefixLength(regexpsSize, 0);
+        int longestPrefixLength = 0;
+
+        for (int i = 0; i < regexpsSize; i++)
+        {
+            for (int j = index; j < inputTextSize; j++)
+            {
+                if (fileInput.regexps[i].checkAcceptance(
+                        fileInput.inputText.substr(index, j - index + 1)))
+                {
+                    prefixLength[i] = j - index + 1;
+                    if (prefixLength[i] > longestPrefixLength)
+                    {
+                        longestPrefixLength = prefixLength[i];
+                    }
+                }
+            }
+        }
+
+        if (longestPrefixLength == 0)
+        {
+            // Echo character as longest prefix length is 0.
+            output += "<" + fileInput.inputText.substr(index, 1) + ",0>";
+            index++;
+        }
+        else
+        {
+            // Find the first regex with the longest prefix length.
+            int longestPrefixIndex;
+            for (int i = 0; i < regexpsSize; i++)
+            {
+                if (prefixLength[i] == longestPrefixLength)
+                {
+                    longestPrefixIndex = i + 1;
+                }
+            }
+
+            // Display longest prefix with regex.
+            output += "<" +
+                      fileInput.inputText.substr(index, longestPrefixLength) +
+                      "," + to_string(longestPrefixIndex) + ">";
+            index += longestPrefixLength;
+        }
     }
+    cout << output << "\n";
 
     return 0;
 }
