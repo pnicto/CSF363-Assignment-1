@@ -9,6 +9,7 @@
 using namespace std;
 
 const string INPUT_FILE_NAME = "input.txt";
+const string OUTPUT_FILE_NAME = "output.txt";
 
 set<int> computeEpsilonClosure(set<int> oldStates,
                                vector<map<char, set<int>>> &transitions)
@@ -616,6 +617,20 @@ FileInput parseInput(string filename)
     return fileInput;
 }
 
+void writeOutput(string contents)
+{
+    ofstream outputFile(OUTPUT_FILE_NAME);
+    if (outputFile.is_open())
+    {
+        outputFile << contents;
+        outputFile.close();
+    }
+    else
+    {
+        cout << "Unable to open output file" << endl;
+    }
+}
+
 int main()
 {
     FileInput fileInput = parseInput(INPUT_FILE_NAME);
@@ -674,6 +689,7 @@ int main()
         }
     }
     cout << output << "\n";
+    writeOutput(output);
 
     return 0;
 }
