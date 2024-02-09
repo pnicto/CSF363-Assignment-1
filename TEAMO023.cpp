@@ -604,8 +604,12 @@ FileInput parseInput(string filename)
         }
         while (getline(inputFile, line))
         {
-            Nfa temp = regexToNfa(line);
-            fileInput.regexps.push_back(temp);
+            // will only parse non empty lines
+            if (!line.empty())
+            {
+                Nfa temp = regexToNfa(line);
+                fileInput.regexps.push_back(temp);
+            }
         }
         inputFile.close();
     }
