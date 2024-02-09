@@ -342,6 +342,18 @@ void mergeTransitions(map<char, set<int>> &destination,
     }
 }
 
+// Plus Operator
+void repeatNfa(NfaWithEpsilon &a)
+{
+    a.transitions[a.stateCount - 1][' '].insert(0);
+}
+
+// Question Mark Operator
+void optionalNfa(NfaWithEpsilon &a)
+{
+    a.transitions[0][' '].insert(a.stateCount - 1);
+}
+
 NfaWithEpsilon concatenateNfa(NfaWithEpsilon &a, NfaWithEpsilon &b)
 {
     NfaWithEpsilon newNfa = NfaWithEpsilon();
@@ -516,6 +528,22 @@ bool checkIfRegexAccepts(string regex, string inputString)
             nfaStack.push(concatenateNfa(a, b));
             break;
         }
+        case '+': {
+            NfaWithEpsilon a = nfaStack.top();
+            nfaStack.pop();
+
+            repeatNfa(a);
+            nfaStack.push(a);
+            break;
+        }
+        case '?': {
+            NfaWithEpsilon a = nfaStack.top();
+            nfaStack.pop();
+
+            optionalNfa(a);
+            nfaStack.push(a);
+            break;
+        }
         default: {
             nfaStack.push(NfaWithEpsilon(c));
             // alphabet.insert(c);
@@ -568,6 +596,22 @@ Nfa regexToNfa(string regex)
             nfaStack.pop();
 
             nfaStack.push(concatenateNfa(a, b));
+            break;
+        }
+        case '+': {
+            NfaWithEpsilon a = nfaStack.top();
+            nfaStack.pop();
+
+            repeatNfa(a);
+            nfaStack.push(a);
+            break;
+        }
+        case '?': {
+            NfaWithEpsilon a = nfaStack.top();
+            nfaStack.pop();
+
+            optionalNfa(a);
+            nfaStack.push(a);
             break;
         }
         default: {
