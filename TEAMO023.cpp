@@ -726,6 +726,7 @@ int main()
                 if (prefixLength[i] == longestPrefixLength)
                 {
                     longestPrefixIndex = i + 1;
+                    break;
                 }
             }
 
@@ -736,7 +737,7 @@ int main()
             index += longestPrefixLength;
         }
     }
-    cout << output << "\n";
+    // cout << output << "\n";
     writeOutput(output);
 
     return 0;
