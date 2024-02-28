@@ -1,0 +1,20 @@
+$RGS1 <Y7 2 A><X123 4 B><IJ4 2 B><HFG6 3 C><TYU91 4 C>
+$BV234 <BV345 3 C><J688 3 B-><S56 3 A><RY8 4 A->
+$LMN2497 <S56 3 A-><K64742 4 B>
+$HKCM746 <X123 4 A-><Y7 2 A-><E4893 4 A><IU4563 3 B-><TRP356 2 C><QWE1678 2 C>
+$INJ563 <RY8 4 A><HFG6 3 A-><X123 4 B-><JH676 3 C>
+// all the above records are valid
+$Q2341 <J688 3 A-><S56 3 A><PO45654 2 A->
+$ABK853 <S56 3 B><Y7 2 B>   < PQR1 2 A-> <ABC12 4>
+$QWE1 <IJ4 2 B-><PQR1 2 B><E4893 4 A->
+// in the below some invalid records are given
+$IWH40 <JH676 3 A-><X123 4 B><BV345 3 B>
+<X123 4 A-> $MCH8748 <IU4563 3 B><Y7 2 A-> // ignore the first tuple before $
+$YIBS087 <K64742 4 A> $ERWTYUI2343213 <PO45654 2 B->  //two records in the same line, consider the both records
+// $MCH8748 <IU4563 3 A><PO45654 2 B->
+$ABK853 <S56 3 A->  <K64742 4 > <PO45654 2 A-> // ignore <K64742 4 > since grade is missing
+$  BV234 <PO45654  B-><BV345 3   B-><RY8 4 B-> //<PO45654  B-> is missing units, ignore the tuple.
+$ <S56 3 A-><K64742 4 B> //invalid record since studID is missing
+$lm24 <S56 3 A-><K64742 4 B> //invalid record since studID is not matching the rules.
+$Q2341 <J688 3 A> <S56 3 B-> < IU4563 3 B>
+$BV234 <J688 3 A> <S56 3 B-> // < IU4563 3 B>
