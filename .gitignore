@@ -10,3 +10,5 @@
 !*.md
 !*/
 !*.txt
+!*.l
+!.editorconfig
