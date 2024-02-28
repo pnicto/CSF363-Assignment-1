@@ -1,9 +1,11 @@
 %{
 #include <stdio.h>
+int nComments = 0;
 %}
 
 %%
-.* { printf("Matched: %s\n", yytext); }
+"//".* { nComments++; }
+.|\n
 %%
 
 int main() {
@@ -12,6 +14,8 @@ int main() {
   FILE* outputFile = fopen("output.txt","w");
   yyin = fopen("data.txt", "r");
   yylex();
+
+  fprintf(outputFile, "@%d", nComments);
 
   return 0;
 }
