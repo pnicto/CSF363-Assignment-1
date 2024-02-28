@@ -12,3 +12,6 @@
 !*.txt
 !*.l
 !.editorconfig
+
+# ignore
+output.txt
