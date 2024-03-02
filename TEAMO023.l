@@ -18,7 +18,10 @@ struct StudentRecord {
 int nComments = 0;
 struct StudentRecord studentRecords[1000];
 // index of record we're currently editing
+int maxStudentIndex = -1;
 int currentStudentIndex = -1;
+
+int validRecords = 0;
 
 // to hold the course record while it is being created
 struct CourseInfo currentCourse;
@@ -76,9 +79,21 @@ void saveCourse();
 %%
 
 void createNewStudentRecord(char *studID) {
-  currentStudentIndex++;
-  strcpy(studentRecords[currentStudentIndex].studID, studID);
-  studentRecords[currentStudentIndex].courseCount = 0;
+  int flag = 0;
+  validRecords++;
+  for(int i = 0; i < maxStudentIndex; i++) {
+    if(strcmp(studentRecords[i].studID, studID) == 0) {
+      currentStudentIndex = i;
+      flag = 1;
+      break;
+    }
+  }
+  if(!flag) {
+    maxStudentIndex++;
+    currentStudentIndex = maxStudentIndex;
+    strcpy(studentRecords[currentStudentIndex].studID, studID);
+    studentRecords[currentStudentIndex].courseCount = 0;
+  }
 }
 
 void createNewCourse(char *courseID) {
@@ -149,8 +164,8 @@ int main() {
 
   // fprintf(outputFile, "@%d", nComments);
 
-  printf("Number of students: %d\n", currentStudentIndex + 1);
-  for (int i = 0; i < currentStudentIndex + 1; i++) {
+  printf("Number of students: %d\n", maxStudentIndex + 1);
+  for (int i = 0; i < maxStudentIndex + 1; i++) {
     printf("\nStudentID: %s\n", studentRecords[i].studID);
     for (int j = 0; j < studentRecords[i].courseCount; j++) {
       printf("CourseID: %s\nUnits: %d\nGrade: %d\n\n",
@@ -162,8 +177,8 @@ int main() {
 
   char line[31];
   fgets(line, 31, inputFile);
-  for(int i = 0; i < currentStudentIndex + 1; i++) {
-    if(!strcmp(line, studentRecords[i].studID)) {
+  for(int i = 0; i < maxStudentIndex + 1; i++) {
+    if(strcmp(line, studentRecords[i].studID) == 0) {
       int totalUnits = 0, totalGradeVal = 0, totalGrade;
 
       for(int j = 0; j < studentRecords[i].courseCount; j++) {
@@ -179,8 +194,9 @@ int main() {
          totalGradeVal,
          totalGrade);
 
+      // Currently displaying maxStudentIndex and not validRecords, update this after clarification
       fprintf(outputFile, "@%d@%d@%d@%d#",
-         currentStudentIndex + 1,
+         maxStudentIndex + 1,
          nComments,
          studentRecords[i].courseCount,
          totalGrade);
