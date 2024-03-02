@@ -32,7 +32,7 @@ void setCourseGrade(char *grade);
 void saveCourse();
 %}
 
-%x STUDENT STUDENT_ID COURSE UNIT GRADE VALID
+%x STUDENT STUDENT_ID COURSE COURSE_SPACE UNIT UNIT_SPACE GRADE VALID
 
 %%
  /* ignore comments in ALL states */
@@ -42,25 +42,37 @@ void saveCourse();
   /* Enter STUDENT state once you find valid student id */
 <STUDENT_ID>[A-Z]+[0-9]+ { createNewStudentRecord(yytext); BEGIN STUDENT; }
   /* once in STUDENT state look for valid course */
-<STUDENT>"<"" "* { BEGIN COURSE; }
+<STUDENT>" "*"<"" "* { BEGIN COURSE; }
   /* once in COURSE state look for valid course */
-<COURSE>[A-Z]+[0-9]+ { createNewCourse(yytext); BEGIN UNIT; }
+<COURSE>[A-Z]+[0-9]+ { createNewCourse(yytext); BEGIN COURSE_SPACE; }
+  /* make sure there's at least one space after the course ID */
+<COURSE_SPACE>" "+ { BEGIN UNIT; }
   /* once in UNIT state look for valid unit */
-<UNIT>[2-4] { setCourseUnits(atoi(yytext)); BEGIN GRADE; }
+<UNIT>[2-4] { setCourseUnits(atoi(yytext)); BEGIN UNIT_SPACE; }
+  /* make sure there's at least one space after the number of units */
+<UNIT_SPACE>" "+ { BEGIN GRADE; }
   /* once in GRADE state look for valid GRADE */
 <GRADE>A|A\-|B|B\-|C { setCourseGrade(yytext); BEGIN VALID; }
   /* once we see a valid grade we move to a state indicating that all 3 values are present in the tuple */
-<VALID>" "*">" {
+<VALID>" "*">"" "* {
   // if we reach here that means we have seen one valid course tuple
   saveCourse();
   BEGIN STUDENT;
   }
-  /* if we are in a initial state, ignore everything besides $ */
+  /* if we are in initial state, ignore everything besides $ */
 <INITIAL>.|\n {}
-  /* if we are in student state, newline means the current record has ended */
+  /* if we are in student state, ignore everything besides $, < and newline */
+<STUDENT>. {}
+  /* if we are in student state, newline means the current student record has ended */
 <STUDENT>\n { BEGIN INITIAL; }
   /* ignore space in these states else */
 <STUDENT,COURSE,UNIT,GRADE,VALID>" "
+  /* in these states, any invalid character means the record is invalid */
+<COURSE,COURSE_SPACE,UNIT,UNIT_SPACE,GRADE,VALID>. { BEGIN STUDENT; }
+  /* a newline in these states means the record is invalid, and the current student record has ended */
+<COURSE,COURSE_SPACE,UNIT,UNIT_SPACE,GRADE,VALID>\n { BEGIN INITIAL; }
+  /* if the student ID was invalid or the line ended, we look for the next record */
+<STUDENT_ID>.|\n { BEGIN INITIAL; }
 %%
 
 void createNewStudentRecord(char *studID) {
