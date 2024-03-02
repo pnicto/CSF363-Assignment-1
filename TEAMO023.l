@@ -32,14 +32,17 @@ void setCourseGrade(char *grade);
 void saveCourse();
 %}
 
-%x STUDENT COURSE UNIT GRADE VALID
+%x STUDENT STUDENT_ID COURSE UNIT GRADE VALID
 
 %%
-"//".* { nComments++; }
+ /* ignore comments in ALL states */
+<*>"//".* { nComments++; }
+  /* Enter STUDENT_ID state once you find valid student id */
+<INITIAL,STUDENT>"$"" "* { BEGIN STUDENT_ID; }
   /* Enter STUDENT state once you find valid student id */
-<STUDENT,INITIAL>"$"" "*[A-Z]+[0-9]+ { createNewStudentRecord(yytext); BEGIN STUDENT; }
+<STUDENT_ID>[A-Z]+[0-9]+ { createNewStudentRecord(yytext); BEGIN STUDENT; }
   /* once in STUDENT state look for valid course */
-<STUDENT>"<" { BEGIN COURSE; }
+<STUDENT>"<"" "* { BEGIN COURSE; }
   /* once in COURSE state look for valid course */
 <COURSE>[A-Z]+[0-9]+ { createNewCourse(yytext); BEGIN UNIT; }
   /* once in UNIT state look for valid unit */
@@ -47,13 +50,15 @@ void saveCourse();
   /* once in GRADE state look for valid GRADE */
 <GRADE>A|A\-|B|B\-|C { setCourseGrade(yytext); BEGIN VALID; }
   /* once we see a valid grade we move to a state indicating that all 3 values are present in the tuple */
-<VALID>">" {
+<VALID>" "*">" {
   // if we reach here that means we have seen one valid course tuple
   saveCourse();
   BEGIN STUDENT;
   }
-  /* if we are in a valid state */
-<VALID>\n {}
+  /* if we are in a initial state, ignore everything besides $ */
+<INITIAL>.|\n {}
+  /* if we are in student state, newline means the current record has ended */
+<STUDENT>\n { BEGIN INITIAL; }
   /* ignore space in these states else */
 <STUDENT,COURSE,UNIT,GRADE,VALID>" "
 %%
