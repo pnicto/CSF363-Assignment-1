@@ -147,7 +147,7 @@ int main() {
   yyin = fopen("data.txt", "r");
   yylex();
 
-  fprintf(outputFile, "@%d", nComments);
+  // fprintf(outputFile, "@%d", nComments);
 
   printf("Number of students: %d\n", currentStudentIndex + 1);
   for (int i = 0; i < currentStudentIndex + 1; i++) {
@@ -159,6 +159,37 @@ int main() {
              studentRecords[i].courses[j].gradeVal);
     }
   }
+
+  char line[31];
+  fgets(line, 31, inputFile);
+  for(int i = 0; i < currentStudentIndex + 1; i++) {
+    if(!strcmp(line, studentRecords[i].studID)) {
+      int totalUnits = 0, totalGradeVal = 0, totalGrade;
+
+      for(int j = 0; j < studentRecords[i].courseCount; j++) {
+        totalUnits += studentRecords[i].courses[j].units;
+        totalGradeVal += studentRecords[i].courses[j].gradeVal;
+      }
+      totalGradeVal *= 100;
+      totalGrade = totalGradeVal / totalUnits;
+
+      printf("Student ID output: %s\n", studentRecords[i].studID);
+      printf("Total Units: %d\nTotal Grade Value: %d\nTotal Grade: %d\n",
+         totalUnits,
+         totalGradeVal,
+         totalGrade);
+
+      fprintf(outputFile, "@%d@%d@%d@%d#",
+         currentStudentIndex + 1,
+         nComments,
+         studentRecords[i].courseCount,
+         totalGrade);
+      break;
+    }
+  }
+
+  fclose(inputFile);
+  fclose(outputFile);
 
   return 0;
 }
