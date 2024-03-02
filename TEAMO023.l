@@ -32,9 +32,30 @@ void setCourseGrade(char *grade);
 void saveCourse();
 %}
 
+%x STUDENT COURSE UNIT GRADE VALID
+
 %%
 "//".* { nComments++; }
-.|\n
+  /* Enter STUDENT state once you find valid student id */
+<STUDENT,INITIAL>"$"" "*[A-Z]+[0-9]+ { createNewStudentRecord(yytext); BEGIN STUDENT; }
+  /* once in STUDENT state look for valid course */
+<STUDENT>"<" { BEGIN COURSE; }
+  /* once in COURSE state look for valid course */
+<COURSE>[A-Z]+[0-9]+ { createNewCourse(yytext); BEGIN UNIT; }
+  /* once in UNIT state look for valid unit */
+<UNIT>[2-4] { setCourseUnits(atoi(yytext)); BEGIN GRADE; }
+  /* once in GRADE state look for valid GRADE */
+<GRADE>A|A\-|B|B\-|C { setCourseGrade(yytext); BEGIN VALID; }
+  /* once we see a valid grade we move to a state indicating that all 3 values are present in the tuple */
+<VALID>">" {
+  // if we reach here that means we have seen one valid course tuple
+  saveCourse();
+  BEGIN STUDENT;
+  }
+  /* if we are in a valid state */
+<VALID>\n {}
+  /* ignore space in these states else */
+<STUDENT,COURSE,UNIT,GRADE,VALID>" "
 %%
 
 void createNewStudentRecord(char *studID) {
@@ -110,6 +131,17 @@ int main() {
   yylex();
 
   fprintf(outputFile, "@%d", nComments);
+
+  printf("Number of students: %d\n", currentStudentIndex + 1);
+  for (int i = 0; i < currentStudentIndex + 1; i++) {
+    printf("\nStudentID: %s\n", studentRecords[i].studID);
+    for (int j = 0; j < studentRecords[i].courseCount; j++) {
+      printf("CourseID: %s\nUnits: %d\nGrade: %d\n\n",
+             studentRecords[i].courses[j].courseID,
+             studentRecords[i].courses[j].units,
+             studentRecords[i].courses[j].gradeVal);
+    }
+  }
 
   return 0;
 }
