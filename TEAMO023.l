@@ -37,7 +37,7 @@ void saveCourse();
 %%
  /* ignore comments in ALL states */
 <*>"//".* { nComments++; }
-  /* Enter STUDENT_ID state once you find valid student id */
+  /* Enter STUDENT_ID state once you find $ */
 <INITIAL,STUDENT>"$"" "* { BEGIN STUDENT_ID; }
   /* Enter STUDENT state once you find valid student id */
 <STUDENT_ID>[A-Z]+[0-9]+ { createNewStudentRecord(yytext); BEGIN STUDENT; }
