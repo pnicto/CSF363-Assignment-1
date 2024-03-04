@@ -194,9 +194,8 @@ int main() {
          totalGradeVal,
          totalGrade);
 
-      // Currently displaying maxStudentIndex and not validRecords, update this after clarification
       fprintf(outputFile, "@%d@%d@%d@%d#",
-         maxStudentIndex + 1,
+         validRecords,
          nComments,
          studentRecords[i].courseCount,
          totalGrade);
