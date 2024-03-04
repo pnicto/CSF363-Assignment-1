@@ -185,7 +185,7 @@ int main() {
 
       for(int j = 0; j < studentRecords[i].courseCount; j++) {
         totalUnits += (float)studentRecords[i].courses[j].units;
-        totalGradeVal += (float)studentRecords[i].courses[j].gradeVal;
+        totalGradeVal += (float)((float)studentRecords[i].courses[j].gradeVal * (float)studentRecords[i].courses[j].units);
       }
       totalGrade = round((float)(totalGradeVal / totalUnits) * 100.0);
 
