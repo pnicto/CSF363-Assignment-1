@@ -23,6 +23,7 @@ int maxStudentIndex = -1;
 int currentStudentIndex = -1;
 
 int validRecords = 0;
+int addValidRecord = 1;
 
 // to hold the course record while it is being created
 struct CourseInfo currentCourse;
@@ -44,7 +45,7 @@ void saveCourse();
   /* Enter STUDENT_ID state once you find $ */
 <INITIAL,STUDENT>"$"" "* { BEGIN STUDENT_ID; }
   /* Enter STUDENT state once you find valid student id */
-<STUDENT_ID>[A-Z]+[0-9]+ { createNewStudentRecord(yytext); BEGIN STUDENT; }
+<STUDENT_ID>[A-Z]+[0-9]+ { createNewStudentRecord(yytext); addValidRecord = 1; BEGIN STUDENT; }
   /* once in STUDENT state look for valid course */
 <STUDENT>" "*"<"" "* { BEGIN COURSE; }
   /* once in COURSE state look for valid course */
@@ -81,7 +82,6 @@ void saveCourse();
 
 void createNewStudentRecord(char *studID) {
   int flag = 0;
-  validRecords++;
   for(int i = 0; i < maxStudentIndex; i++) {
     if(strcmp(studentRecords[i].studID, studID) == 0) {
       currentStudentIndex = i;
@@ -132,6 +132,13 @@ void setCourseGrade(char *grade) {
 }
 
 void saveCourse() {
+  // we check if its the first time we are saving a course for a particular record
+  // if it is, then we increase number of valid records by one
+  if(addValidRecord) {
+    validRecords++;
+    addValidRecord = 0;
+  }
+
   int courseIndex = 0;
   // first check if a course with this name already exists
   for (courseIndex = 0;
@@ -162,8 +169,6 @@ int main() {
   FILE *outputFile = fopen("output.txt", "w");
   yyin = fopen("data.txt", "r");
   yylex();
-
-  // fprintf(outputFile, "@%d", nComments);
 
   printf("Number of students: %d\n", maxStudentIndex + 1);
   for (int i = 0; i < maxStudentIndex + 1; i++) {
