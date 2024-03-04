@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 struct CourseInfo {
   char courseID[31];
@@ -179,17 +180,17 @@ int main() {
   fgets(line, 31, inputFile);
   for(int i = 0; i < maxStudentIndex + 1; i++) {
     if(strcmp(line, studentRecords[i].studID) == 0) {
-      int totalUnits = 0, totalGradeVal = 0, totalGrade;
+      float totalUnits = 0.0, totalGradeVal = 0.0;
+      int totalGrade;
 
       for(int j = 0; j < studentRecords[i].courseCount; j++) {
-        totalUnits += studentRecords[i].courses[j].units;
-        totalGradeVal += studentRecords[i].courses[j].gradeVal;
+        totalUnits += (float)studentRecords[i].courses[j].units;
+        totalGradeVal += (float)studentRecords[i].courses[j].gradeVal;
       }
-      totalGradeVal *= 100;
-      totalGrade = totalGradeVal / totalUnits;
+      totalGrade = round((float)(totalGradeVal / totalUnits) * 100.0);
 
       printf("Student ID output: %s\n", studentRecords[i].studID);
-      printf("Total Units: %d\nTotal Grade Value: %d\nTotal Grade: %d\n",
+      printf("Total Units: %f\nTotal Grade Value: %f\nTotal Grade: %d\n",
          totalUnits,
          totalGradeVal,
          totalGrade);
