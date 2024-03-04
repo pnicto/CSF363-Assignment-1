@@ -177,9 +177,11 @@ int main() {
   }
 
   char line[31];
+  int flag = 0;
   fgets(line, 31, inputFile);
   for(int i = 0; i < maxStudentIndex + 1; i++) {
     if(strcmp(line, studentRecords[i].studID) == 0) {
+      flag = 1;
       float totalUnits = 0.0, totalGradeVal = 0.0;
       int totalGrade;
 
@@ -202,6 +204,13 @@ int main() {
          totalGrade);
       break;
     }
+  }
+
+  if(!flag) {
+    printf("No student found\n");
+    fprintf(outputFile, "@%d@%d@0@0#",
+       validRecords,
+       nComments);
   }
 
   fclose(inputFile);
