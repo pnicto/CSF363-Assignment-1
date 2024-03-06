@@ -87,7 +87,7 @@ void createNewStudentRecord(char *studID, int isSaveStudentRecord) {
     temporaryStudentRecord.courseCount = 0;
   } else {
     int flag = 0;
-    for (int i = 0; i < maxStudentIndex; i++) {
+    for (int i = 0; i < maxStudentIndex + 1; i++) {
       if (strcmp(studentRecords[i].studID, studID) == 0) {
         currentStudentIndex = i;
         flag = 1;
@@ -190,7 +190,7 @@ void saveStudentRecord() {
   if (temporaryStudentRecord.courseCount > 0) {
     validRecords++;
     createNewStudentRecord(temporaryStudentRecord.studID, 1);
-    
+
     for (int i = 0; i < temporaryStudentRecord.courseCount; i++) {
       strcpy(currentCourse.courseID, temporaryStudentRecord.courses[i].courseID);
       currentCourse.units = temporaryStudentRecord.courses[i].units;
