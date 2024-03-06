@@ -18,23 +18,24 @@ struct StudentRecord {
 
 int nComments = 0;
 struct StudentRecord studentRecords[1000];
+struct StudentRecord temporaryStudentRecord;
 // index of record we're currently editing
 int maxStudentIndex = -1;
 int currentStudentIndex = -1;
 
 int validRecords = 0;
-int addValidRecord = 1;
 
 // to hold the course record while it is being created
 struct CourseInfo currentCourse;
 
 // called when we see a new valid student ID after a $
-void createNewStudentRecord(char *studID);
+void createNewStudentRecord(char *studID, int isSaveStudentRecord);
 // called when we see a valid courseID after a <
 void createNewCourse(char *courseID);
 void setCourseUnits(int units);
 void setCourseGrade(char *grade);
-void saveCourse();
+void saveCourse(int isSaveStudentRecord);
+void saveStudentRecord();
 %}
 
 %x STUDENT STUDENT_ID COURSE COURSE_SPACE UNIT UNIT_SPACE GRADE VALID
@@ -45,7 +46,7 @@ void saveCourse();
   /* Enter STUDENT_ID state once you find $ */
 <INITIAL,STUDENT>"$"" "* { BEGIN STUDENT_ID; }
   /* Enter STUDENT state once you find valid student id */
-<STUDENT_ID>[A-Z]+[0-9]+ { createNewStudentRecord(yytext); addValidRecord = 1; BEGIN STUDENT; }
+<STUDENT_ID>[A-Z]+[0-9]+ { createNewStudentRecord(yytext, 0); BEGIN STUDENT; }
   /* once in STUDENT state look for valid course */
 <STUDENT>" "*"<"" "* { BEGIN COURSE; }
   /* once in COURSE state look for valid course */
@@ -61,7 +62,7 @@ void saveCourse();
   /* once we see a valid grade we move to a state indicating that all 3 values are present in the tuple */
 <VALID>" "*">"" "* {
   // if we reach here that means we have seen one valid course tuple
-  saveCourse();
+  saveCourse(0);
   BEGIN STUDENT;
   }
   /* if we are in initial state, ignore everything besides $ */
@@ -69,7 +70,7 @@ void saveCourse();
   /* if we are in student state, ignore everything besides $, < and newline */
 <STUDENT>. {}
   /* if we are in student state, newline means the current student record has ended */
-<STUDENT>\n { BEGIN INITIAL; }
+<STUDENT>\n { saveStudentRecord(); BEGIN INITIAL; }
   /* ignore space in these states else */
 <STUDENT,COURSE,UNIT,GRADE,VALID>" "
   /* in these states, any invalid character means the record is invalid */
@@ -80,20 +81,25 @@ void saveCourse();
 <STUDENT_ID>.|\n { BEGIN INITIAL; }
 %%
 
-void createNewStudentRecord(char *studID) {
-  int flag = 0;
-  for(int i = 0; i < maxStudentIndex; i++) {
-    if(strcmp(studentRecords[i].studID, studID) == 0) {
-      currentStudentIndex = i;
-      flag = 1;
-      break;
+void createNewStudentRecord(char *studID, int isSaveStudentRecord) {
+  if (isSaveStudentRecord == 0) {
+    strcpy(temporaryStudentRecord.studID, studID);
+    temporaryStudentRecord.courseCount = 0;
+  } else {
+    int flag = 0;
+    for (int i = 0; i < maxStudentIndex; i++) {
+      if (strcmp(studentRecords[i].studID, studID) == 0) {
+        currentStudentIndex = i;
+        flag = 1;
+        break;
+      }
     }
-  }
-  if(!flag) {
-    maxStudentIndex++;
-    currentStudentIndex = maxStudentIndex;
-    strcpy(studentRecords[currentStudentIndex].studID, studID);
-    studentRecords[currentStudentIndex].courseCount = 0;
+    if (!flag) {
+      maxStudentIndex++;
+      currentStudentIndex = maxStudentIndex;
+      strcpy(studentRecords[currentStudentIndex].studID, studID);
+      studentRecords[currentStudentIndex].courseCount = 0;
+    }
   }
 }
 
@@ -131,35 +137,68 @@ void setCourseGrade(char *grade) {
   currentCourse.gradeVal = gradeVal;
 }
 
-void saveCourse() {
-  // we check if its the first time we are saving a course for a particular record
-  // if it is, then we increase number of valid records by one
-  if(addValidRecord) {
-    validRecords++;
-    addValidRecord = 0;
-  }
-
+void saveCourse(int isSaveStudentRecord) {
   int courseIndex = 0;
-  // first check if a course with this name already exists
-  for (courseIndex = 0;
-       courseIndex < studentRecords[currentStudentIndex].courseCount;
-       courseIndex++) {
-    if (strcmp(
-            studentRecords[currentStudentIndex].courses[courseIndex].courseID,
-            currentCourse.courseID) == 0) {
-      break;
+  if (isSaveStudentRecord == 0) {
+    // first check if a course with this name already exists
+    for (courseIndex = 0;
+        courseIndex < temporaryStudentRecord.courseCount;
+         courseIndex++) {
+      if (strcmp(
+              temporaryStudentRecord.courses[courseIndex].courseID,
+              currentCourse.courseID) == 0) {
+        break;
+      }
+    }
+
+    strcpy(temporaryStudentRecord.courses[courseIndex].courseID,
+           currentCourse.courseID);
+    temporaryStudentRecord.courses[courseIndex].units =
+        currentCourse.units;
+    temporaryStudentRecord.courses[courseIndex].gradeVal =
+        currentCourse.gradeVal;
+
+    if (courseIndex == temporaryStudentRecord.courseCount) {
+      temporaryStudentRecord.courseCount++;
+    }
+  } else {
+    // first check if a course with this name already exists
+    for (courseIndex = 0;
+        courseIndex < studentRecords[currentStudentIndex].courseCount;
+         courseIndex++) {
+      if (strcmp(
+              studentRecords[currentStudentIndex].courses[courseIndex].courseID,
+              currentCourse.courseID) == 0) {
+        break;
+      }
+    }
+
+    strcpy(studentRecords[currentStudentIndex].courses[courseIndex].courseID,
+           currentCourse.courseID);
+    studentRecords[currentStudentIndex].courses[courseIndex].units =
+        currentCourse.units;
+    studentRecords[currentStudentIndex].courses[courseIndex].gradeVal =
+        currentCourse.gradeVal;
+
+    if (courseIndex == studentRecords[currentStudentIndex].courseCount) {
+      studentRecords[currentStudentIndex].courseCount++;
     }
   }
+}
 
-  strcpy(studentRecords[currentStudentIndex].courses[courseIndex].courseID,
-         currentCourse.courseID);
-  studentRecords[currentStudentIndex].courses[courseIndex].units =
-      currentCourse.units;
-  studentRecords[currentStudentIndex].courses[courseIndex].gradeVal =
-      currentCourse.gradeVal;
+void saveStudentRecord() {
+  if (temporaryStudentRecord.courseCount > 0) {
+    validRecords++;
+    createNewStudentRecord(temporaryStudentRecord.studID, 1);
+    
+    for (int i = 0; i < temporaryStudentRecord.courseCount; i++) {
+      strcpy(currentCourse.courseID, temporaryStudentRecord.courses[i].courseID);
+      currentCourse.units = temporaryStudentRecord.courses[i].units;
+      currentCourse.gradeVal = temporaryStudentRecord.courses[i].gradeVal;
 
-  if (courseIndex == studentRecords[currentStudentIndex].courseCount) {
-    studentRecords[currentStudentIndex].courseCount++;
+      saveCourse(1);
+    }
+    strcpy(temporaryStudentRecord.studID, "$");
   }
 }
 
@@ -169,6 +208,10 @@ int main() {
   FILE *outputFile = fopen("output.txt", "w");
   yyin = fopen("data.txt", "r");
   yylex();
+
+  if (strcmp(temporaryStudentRecord.studID, "$") != 0) {
+    saveStudentRecord();
+  }
 
   printf("Number of students: %d\n", maxStudentIndex + 1);
   for (int i = 0; i < maxStudentIndex + 1; i++) {
@@ -184,13 +227,13 @@ int main() {
   char line[31];
   int flag = 0;
   fgets(line, 31, inputFile);
-  for(int i = 0; i < maxStudentIndex + 1; i++) {
-    if(strcmp(line, studentRecords[i].studID) == 0) {
+  for (int i = 0; i < maxStudentIndex + 1; i++) {
+    if (strcmp(line, studentRecords[i].studID) == 0) {
       flag = 1;
       float totalUnits = 0.0, totalGradeVal = 0.0;
       int totalGrade;
 
-      for(int j = 0; j < studentRecords[i].courseCount; j++) {
+      for (int j = 0; j < studentRecords[i].courseCount; j++) {
         totalUnits += (float)studentRecords[i].courses[j].units;
         totalGradeVal += (float)((float)studentRecords[i].courses[j].gradeVal * (float)studentRecords[i].courses[j].units);
       }
@@ -211,7 +254,7 @@ int main() {
     }
   }
 
-  if(!flag) {
+  if (!flag) {
     printf("No student found\n");
     fprintf(outputFile, "@%d@%d@0@0#",
        validRecords,
