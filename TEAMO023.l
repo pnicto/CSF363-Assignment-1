@@ -42,7 +42,7 @@ void createNewCourse(char *courseID);
 void setCourseUnits(int units);
 
 // Set course grade for a course
-void setCourseGrade(char *grade);
+void setCourseGrade(int value);
 
 // Save a course to a student record
 // isSaveStudentRecord indicates whether the course gets saved to the temporary record or actual saved student records
@@ -73,7 +73,11 @@ void saveStudentRecord();
   /* Make sure there's at least one space after the number of units */
 <UNIT_SPACE>" "+ { BEGIN GRADE; }
   /* Once in GRADE state look for valid GRADE */
-<GRADE>A|A\-|B|B\-|C { setCourseGrade(yytext); BEGIN VALID; }
+<GRADE>A { setCourseGrade(10); BEGIN VALID; }
+<GRADE>A\- { setCourseGrade(8); BEGIN VALID; }
+<GRADE>B { setCourseGrade(6); BEGIN VALID; }
+<GRADE>B\- { setCourseGrade(4); BEGIN VALID; }
+<GRADE>C { setCourseGrade(2); BEGIN VALID; }
   /* Once we see a valid grade we move to a state indicating that all 3 values are present in the tuple */
 <VALID>" "*">"" "* {
   /* If we reach here that means we have seen one valid course tuple
@@ -132,32 +136,8 @@ void createNewCourse(char *courseID) {
 void setCourseUnits(int units) { currentCourse.units = units; }
 
 // Set course grade for the current course tuple
-void setCourseGrade(char *grade) {
-  int gradeVal;
-  char gradeLetter = grade[0];
-
-  switch (gradeLetter) {
-  case 'A':
-    if (strlen(grade) == 1) {
-      gradeVal = 10;
-    } else {
-      gradeVal = 8;
-    }
-    break;
-  case 'B':
-    if (strlen(grade) == 1) {
-      gradeVal = 6;
-    } else {
-      gradeVal = 4;
-    }
-    break;
-
-  default:
-    gradeVal = 2;
-    break;
-  }
-
-  currentCourse.gradeVal = gradeVal;
+void setCourseGrade(int value) {
+  currentCourse.gradeVal = value;
 }
 
 // Save the current course tuple to a student record
