@@ -58,7 +58,9 @@ void saveStudentRecord();
  /* Ignore comments in ALL states */
 <*>"//".* { nComments++; }
   /* Enter STUDENT_ID state once you find $ */
-<INITIAL,STUDENT>"$"" "* { BEGIN STUDENT_ID; }
+<INITIAL>"$"" "* { BEGIN STUDENT_ID; }
+  /* If we were already in STUDENT state, then save the student record before resetting*/
+<STUDENT>"$"" "* { saveStudentRecord(); BEGIN STUDENT_ID; }
   /* Enter STUDENT state once you find valid student id
   We initialize the temporary student record with obtanied student id */
 <STUDENT_ID>[A-Z]+[0-9]+ { createNewStudentRecord(yytext, 0); BEGIN STUDENT; }
@@ -206,6 +208,7 @@ void saveStudentRecord() {
       saveCourse(1);
     }
     strcpy(temporaryStudentRecord.studID, "$");
+    temporaryStudentRecord.courseCount = 0;
   }
 }
 
