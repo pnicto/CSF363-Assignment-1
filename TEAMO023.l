@@ -223,16 +223,16 @@ int main() {
     saveStudentRecord();
   }
 
-  printf("Number of students: %d\n", maxStudentIndex + 1);
-  for (int i = 0; i < maxStudentIndex + 1; i++) {
-    printf("\nStudentID: %s\n", studentRecords[i].studID);
-    for (int j = 0; j < studentRecords[i].courseCount; j++) {
-      printf("CourseID: %s\nUnits: %d\nGrade: %d\n\n",
-             studentRecords[i].courses[j].courseID,
-             studentRecords[i].courses[j].units,
-             studentRecords[i].courses[j].gradeVal);
-    }
-  }
+  // printf("Number of students: %d\n", maxStudentIndex + 1);
+  // for (int i = 0; i < maxStudentIndex + 1; i++) {
+  //   printf("\nStudentID: %s\n", studentRecords[i].studID);
+  //   for (int j = 0; j < studentRecords[i].courseCount; j++) {
+  //     printf("CourseID: %s\nUnits: %d\nGrade: %d\n\n",
+  //            studentRecords[i].courses[j].courseID,
+  //            studentRecords[i].courses[j].units,
+  //            studentRecords[i].courses[j].gradeVal);
+  //   }
+  // }
 
   // Search for the student record using the given student id from input file
   char line[31];
@@ -251,11 +251,11 @@ int main() {
       totalGrade = round((float)(totalGradeVal / totalUnits) * 100.0);
 
       // Terminal output (remove before final submission)
-      printf("Student ID output: %s\n", studentRecords[i].studID);
-      printf("Total Units: %f\nTotal Grade Value: %f\nTotal Grade: %d\n",
-         totalUnits,
-         totalGradeVal,
-         totalGrade);
+      // printf("Student ID output: %s\n", studentRecords[i].studID);
+      // printf("Total Units: %f\nTotal Grade Value: %f\nTotal Grade: %d\n",
+      //    totalUnits,
+      //    totalGradeVal,
+      //    totalGrade);
 
       fprintf(outputFile, "@%d@%d@%d@%d#",
          validRecords,
@@ -268,7 +268,7 @@ int main() {
 
   // No student with given student id found
   if (!flag) {
-    printf("No student found\n");
+    // printf("No student found\n");
     fprintf(outputFile, "@%d@%d@0@0#",
        validRecords,
        nComments);
